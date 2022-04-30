@@ -6,6 +6,7 @@ import reactor.core.publisher.Mono;
 
 public class WeatherAPI {
 
+    //Generates the URI for the request based on a city (user's input)
     public static String getWeatherAPIRequest(String city) {
         String APIkey = "0efccd5a0c1d61b091b4c75fbc5b050a";
         String request = "https://api.openweathermap.org/data/2.5/weather?q=" + city + "&appid=" + APIkey;
@@ -13,6 +14,7 @@ public class WeatherAPI {
         return request;
     }
 
+    //Generates the URI for the request based on the ISS location
     public static String getWeatherAPIRequest(double lat, double lon) {
         String APIkey = "0efccd5a0c1d61b091b4c75fbc5b050a";
         String request = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&appid=" + APIkey;
@@ -20,6 +22,7 @@ public class WeatherAPI {
         return request;
     }
 
+    //Calls the API and handles client & server errors
     public static WeatherResponse getWeather(String request) {
 
         WebClient client = WebClient.create(request);
@@ -53,19 +56,26 @@ public class WeatherAPI {
         return weatherjsonresponse;
     }
 
+    //Displays weather information. If the response is null: returns string stating the location does not exist.
     public static void displayWeather(WeatherResponse weatherjsonresponse){
         if (weatherjsonresponse == null){
             System.out.println("This location does not exist, please try again.");
         }
 
+        //If name = null: then the lat and long do not correspond to a city, so return string and
+        // weather at the closest station
         else if (weatherjsonresponse.name == ""){
             System.out.println("The ISS is not above any cities");
             System.out.println("Weather at the closest station: " + weatherjsonresponse.weather[0].description);
             WeatherTempInfo main = weatherjsonresponse.main;
+
+            //Convert Kelvin into Fahrenheit and Celsius
             double feelTempF = kelvinToFahrenheit(main.feels_like);
             double feelTempC = kelvinToCelsius(main.feels_like);
             double tempF = kelvinToFahrenheit(main.temp);
             double tempC = kelvinToCelsius(main.temp);
+
+            //Display all weather info
             System.out.format("Current temperature: %.0f in Fahrenheit / %.1f in Celsius \n", tempF, tempC);
             System.out.format("Feels like: %.0f in Fahrenheit / %.1f in Celsius \n", feelTempF, feelTempC);
             System.out.println("Current humidity: " + main.humidity + "%");
@@ -77,16 +87,25 @@ public class WeatherAPI {
             System.out.format("Wind speed: %.2f m/sec\n", wind.speed);
             String.format("%n");
         }
+
+        //If the city exists (returns not null), then display city and country info + weather info
         else {
+            //Displays city + country
             System.out.println("City: " + weatherjsonresponse.name);
             WeatherSystemInfo sys = weatherjsonresponse.sys;
             System.out.println("Country code: " + sys.country);
+
+            //Displays weather description
             System.out.println("Weather: " + weatherjsonresponse.weather[0].description);
             WeatherTempInfo main = weatherjsonresponse.main;
+
+            //Convert Kelvin into Fahrenheit and Celsius
             double feelTempF = kelvinToFahrenheit(main.feels_like);
             double feelTempC = kelvinToCelsius(main.feels_like);
             double tempF = kelvinToFahrenheit(main.temp);
             double tempC = kelvinToCelsius(main.temp);
+
+            //Display all weather info
             System.out.format("Current temperature: %.0f in Fahrenheit / %.1f in Celsius \n", tempF, tempC);
             System.out.format("Feels like: %.0f in Fahrenheit / %.1f in Celsius \n", feelTempF, feelTempC);
             System.out.println("Current humidity: " + main.humidity + "%");
@@ -101,11 +120,13 @@ public class WeatherAPI {
 
     }
 
+    //Converts a response from API with a lat/long into location info
     public static void displayLocation(WeatherResponse weatherjsonresponse){
         if (weatherjsonresponse == null){
             System.out.println("This location does not exist, please try again.");
         }
 
+        //If no city name, then ISS is not above any city. Display only lat/long.
         else if (weatherjsonresponse.name == ""){
             System.out.println("The ISS is not above any cities");
             WeatherCoordinates coord = weatherjsonresponse.coord;
@@ -114,6 +135,7 @@ public class WeatherAPI {
             String.format("%n");
         }
 
+        //If city name, then display city and country info.
         else {
             System.out.println("City: " + weatherjsonresponse.name);
             WeatherSystemInfo countryCode = weatherjsonresponse.sys;
@@ -126,10 +148,10 @@ public class WeatherAPI {
 
     }
 
+    //Methods to convert kelvin -> Fahrenheit or Celsius
     private static double kelvinToCelsius(double kelvin){
         return (kelvin-273.5);
     }
-
     private static double kelvinToFahrenheit(double kelvin){
         return (1.8* (kelvin-273) + 32);
     }

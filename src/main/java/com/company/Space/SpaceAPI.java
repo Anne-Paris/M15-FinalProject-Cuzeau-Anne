@@ -18,6 +18,7 @@ public class SpaceAPI {
         return latitude;
     }
 
+    //Calls the API and handles client & server errors
     private static void getISSLatLong() {
 
         WebClient client = WebClient.create("http://api.open-notify.org/iss-now.json");
@@ -46,6 +47,7 @@ public class SpaceAPI {
             System.out.println("An error occurred: " + e.getMessage());
         }
 
+        //Sets latitude and longitude.
         SpaceCoordinates latLong = spaceResponse.iss_position;
         latitude = latLong.latitude;
         longitude = latLong.longitude;

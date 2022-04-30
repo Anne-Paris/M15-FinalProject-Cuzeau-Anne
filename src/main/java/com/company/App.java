@@ -29,6 +29,8 @@ public class App {
 
 			//Get user's choice
 			choiceStr = input.nextLine();
+
+			//Check user's input: if it is either null or not a number between 1-5 (see regex), then ask again.
 			while (choiceStr == null || choiceStr.matches("^[1-5]$") == false) {
 				System.out.println("Invalid choice, please try again");
 				System.out.println("Please enter your choice:");
@@ -36,6 +38,8 @@ public class App {
 			}
 
 			choice = Integer.parseInt(choiceStr);
+
+			//Try/Catch: Number exception, not supposed to be reached since default checks input
 			try {
 				switch (choice) {
 					case 1:
@@ -62,10 +66,6 @@ public class App {
 							choice = Integer.parseInt(choiceStr);
 						}
 				}
-			} catch (ArrayIndexOutOfBoundsException e) {
-				System.out.println("Sorry, your input is not correct. Please try again:");
-				choiceStr = input.nextLine();
-				choice = Integer.parseInt(choiceStr);
 			} catch (NumberFormatException e) {
 				System.out.print("Your selection can only be an integer!");
 				choiceStr = input.nextLine();
@@ -76,23 +76,7 @@ public class App {
 		} while (choice != 5);
 	}
 
-	private static void case4(Scanner input) {
-		CryptoAPI cryptoAPI = new CryptoAPI();
-		System.out.print("Please enter the currency symbol you want to see: ");
-		String choiceCryptoCurrency = input.nextLine();
-		CryptoResponse[] cryptoResponse = CryptoAPI.getCoinValue(choiceCryptoCurrency);
-		while (cryptoResponse == null || cryptoResponse.length == 0) {
-			System.out.print("This currency does not exist, please try another currency:");
-			choiceCryptoCurrency = input.nextLine();
-			cryptoResponse = CryptoAPI.getCoinValue(choiceCryptoCurrency);
-		}
-		System.out.println(cryptoAPI.displayName(cryptoResponse));
-		System.out.println(cryptoAPI.displayAsset_ID(cryptoResponse));
-		System.out.println("USD price: $"+ String.format("%,.2f",cryptoAPI.displayUSD_Price(cryptoResponse)));
-		String.format("%n");
-	}
-
-
+	//Takes a city and returns the weather using OpenWeather API
 	private static void case1(Scanner input) {
 		System.out.println("Please enter your city:");
 		String city = input.nextLine();
@@ -108,23 +92,62 @@ public class App {
 		weatherAPI.displayWeather(weather);
 	}
 
+	//Returns Weather at the ISS coordinates.
+	//If ISS not above any city, returns weather at the closest station.
 	private static void case2() {
 		SpaceAPI spaceAPI = new SpaceAPI();
 		WeatherAPI weatherAPIiss = new WeatherAPI();
+
+		//Fetches lat and long of ISS
 		double issLon = spaceAPI.getISSlongitude();
 		double issLat = spaceAPI.getISSlatitude();
+
+		//Generates request
 		String request2 = weatherAPIiss.getWeatherAPIRequest(issLat, issLon);
 		WeatherResponse weather2 = weatherAPIiss.getWeather(request2);
+
+		//Displays weather
 		weatherAPIiss.displayWeather(weather2);
 	}
 
+	//Prints the closest city above ISS. If not above any city, returns the lat/long coordinates.
 	private static void case3() {
 		SpaceAPI spaceAPI2 = new SpaceAPI();
 		WeatherAPI weatherAPIissLoc = new WeatherAPI();
+
+		//Fetches lat and long of ISS
 		double issLonLoc = spaceAPI2.getISSlongitude();
 		double issLatLoc = spaceAPI2.getISSlatitude();
+
+		//Generates request
 		String displayLoc = weatherAPIissLoc.getWeatherAPIRequest(issLatLoc, issLonLoc);
+
+		//Fetches & Displays ISS location
 		WeatherResponse ISSLoc = weatherAPIissLoc.getWeather(displayLoc);
 		weatherAPIissLoc.displayLocation(ISSLoc);
 	}
+
+	//Returns US value of any crypto currency based on the currency symbol (BTC for bitcoin etc.)
+	private static void case4(Scanner input) {
+		CryptoAPI cryptoAPI = new CryptoAPI();
+
+		//Asks user's input
+		System.out.print("Please enter the currency symbol you want to see: ");
+		String choiceCryptoCurrency = input.nextLine();
+
+		//Generates request: if currency does not exists, ask again.
+		CryptoResponse[] cryptoResponse = CryptoAPI.getCoinValue(choiceCryptoCurrency);
+		while (cryptoResponse == null || cryptoResponse.length == 0) {
+			System.out.print("This currency does not exist, please try another currency (ex. 'BTC'): ");
+			choiceCryptoCurrency = input.nextLine();
+			cryptoResponse = CryptoAPI.getCoinValue(choiceCryptoCurrency);
+		}
+
+		//Once correct currency entered, display information.
+		System.out.println(cryptoAPI.displayName(cryptoResponse));
+		System.out.println(cryptoAPI.displayAsset_ID(cryptoResponse));
+		System.out.println("USD price: $"+ String.format("%,.2f",cryptoAPI.displayUSD_Price(cryptoResponse)));
+		String.format("%n");
+	}
+
 }
